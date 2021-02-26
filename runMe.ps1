@@ -43,6 +43,6 @@ foreach ($nsg in $nsgList) {
                 break;
             }
         }
-        Write-Host "Found No Linux VM, skip NSG $($nsg.Name)." -ForegroundColor Yellow
+        Write-Host "Found no Linux VM, skip NIC $($thisNic.Name) in NSG $($nsg.Name)." -ForegroundColor Yellow
     }
 }
