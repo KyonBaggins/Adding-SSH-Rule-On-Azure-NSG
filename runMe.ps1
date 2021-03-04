@@ -41,7 +41,7 @@ foreach ($nsg in $nsgList) {
 
                 $rulePrior = 100
                 while ($rulePrior -le 4096) {
-                    $rst = $nsg | Add-AzNetworkSecurityRuleConfig -Name 'AllowFNAnsibleInbound' -Description 'Allow Flyingnets Ansible inbound to port 22' -Access Allow -Protocol * -Direction Inbound -Priority $rulePrior -SourceAddressPrefix "139.217.223.134" -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 22 -ErrorAction SilentlyContinue
+                    $rst = $nsg | Add-AzNetworkSecurityRuleConfig -Name 'AllowAnsibleInbound' -Description 'Allow Ansible inbound to port 22' -Access Allow -Protocol * -Direction Inbound -Priority $rulePrior -SourceAddressPrefix "139.217.223.134" -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 22 -ErrorAction SilentlyContinue
                     $rst = $nsg | Set-AzNetworkSecurityGroup -ErrorAction SilentlyContinue
                     
                     if ($Null -ne $rst) {
