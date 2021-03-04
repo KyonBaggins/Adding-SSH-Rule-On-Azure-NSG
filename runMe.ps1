@@ -38,9 +38,22 @@ foreach ($nsg in $nsgList) {
             if ($thisVM.StorageProfile.OsDisk.OsType -eq 'Linux') {
                 # 当前网络接口关联的虚拟机为Linux虚拟机，在当前网络安全组添加对应入站访问规则，跳出循环
                 Write-Host "Found Linux VM $($thisVM.Name), adding security rule for NSG $($nsg.Name)." -ForegroundColor Yellow
-                $nsg = $nsg | Add-AzNetworkSecurityRuleConfig -Name 'AllowAnsibleInbound' -Description 'Allow Ansible inbound to port 22' -Access Allow -Protocol * -Direction Inbound -Priority 4096 -SourceAddressPrefix "139.217.223.134" -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 22
-                $nsg = $nsg | Set-AzNetworkSecurityGroup
-                break;
+
+                $rulePrior = 100
+                while ($rulePrior -le 4096) {
+                    $rst = $nsg | Add-AzNetworkSecurityRuleConfig -Name 'AllowFNAnsibleInbound' -Description 'Allow Flyingnets Ansible inbound to port 22' -Access Allow -Protocol * -Direction Inbound -Priority $rulePrior -SourceAddressPrefix "139.217.223.134" -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 22 -ErrorAction SilentlyContinue
+                    $rst = $nsg | Set-AzNetworkSecurityGroup -ErrorAction SilentlyContinue
+                    
+                    if ($Null -ne $rst) {
+                        # 判断添加的安全规则是否与已有规则优先级冲突，不冲突则跳出循环
+                        break
+                    }
+                    
+                    # 添加的安全规则与已有规则优先级发生冲突，删除当前的冲突规则配置
+                    $nsg = Remove-AzNetworkSecurityRuleConfig -Name 'AllowFNAnsibleInbound' -NetworkSecurityGroup $nsg
+                    $rulePrior ++
+                }
+                break
             }
         }
         Write-Host "Found no Linux VM, skip NIC $($thisNic.Name) in NSG $($nsg.Name)." -ForegroundColor Yellow
